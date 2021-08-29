@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 from random import randint
+from time import time
 
 
 def task3_2():
@@ -19,24 +20,29 @@ def task3_2():
 
 
 def task_live():
+    print('Start!!!')
     # setup
-    infile = open('in.txt', 'r')
+    infile = open('in_19.txt', 'r')
     x_len, y_len = [int(i)-1 for i in infile.readline().split()]
     char1, char2 = infile.readline().split()                                             # '#', '_'
-    str_in = [[[char1, char2][randint(0, 1)] for _ in range(x_len)] for _ in range(y_len)]  # [i[:-1].split() for i in infile.readlines()]
+    str_in = [[[1, 0][randint(0, 1)] for _ in range(x_len)] for _ in range(y_len)]  
+    # str_in = [i[:-1].split() for i in infile.readlines()]
     infile.close()
     window_name = 'A live'
-    cv2.namedWindow(window_name)
+    t = time()
+    # cv2.namedWindow(window_name)
 
     # setup 2
     def show_gen(gen_i):
         def color_cell(j):
-            return j                                                                # int(j == char2)*127 + int(j == char1)*128
+            return  int(j)*255 #int(j == char2)*0 + int(j == char1)*255
         int_in = [[color_cell(j) for j in i] for i in str_in]
         np_arr = np.array(int_in, dtype=np.float32)
-        array_show = cv2.resize(np_arr, (850, 850), interpolation=cv2.INTER_AREA)
-        cv2.imshow(window_name, array_show)
-        cv2.imwrite('img'+str(gen_i), array_show)
+        cv2.imwrite('liveimg/img'+str('0'*(3-len(str(gen_i)))+str(gen_i))+'.png', np_arr)
+        
+        # array_show = cv2.resize(np_arr, (790, 790), interpolation=cv2.INTER_AREA)
+        # cv2.imshow(window_name, array_show)
+        # array_show = cv2.cvtColor(array_show, cv2.COLOR_)
 
     def gen(old_bool):
         def cell(lived):
@@ -45,9 +51,9 @@ def task_live():
             for x in neighbours:
                 for y in neighbours:
                     if not x == 0 == y:
-                        sum_cell += old_bool[(a + y) % y_len][(b + x) % x_len] == char1
-            return char1 if sum_cell == 3 or sum_cell == 2 and lived == char1 else char2
-        new_bool = [[char2]*(x_len+1) for _ in range(y_len+1)]
+                        sum_cell += old_bool[(a + y) % y_len][(b + x) % x_len]
+            return 1 if sum_cell == 3 or sum_cell == 2 and lived else 0
+        new_bool = [[0]*(x_len+1) for _ in range(y_len+1)]
         for a in range(y_len):
             for b in range(x_len):
                 new_bool[a][b] = cell(old_bool[a][b])
@@ -55,9 +61,11 @@ def task_live():
     gen_i = 0
     while True:
         show_gen(gen_i)
-        if cv2.waitKey(1) == 27:
-            cv2.destroyAllWindows()
-            break
+        print(gen_i, time() - t)
+        t = time()
+        # if cv2.waitKey(1) == 27:
+        #     cv2.destroyAllWindows()
+        #     break
         str_in = gen(str_in)
         gen_i += 1
         # sleep(0.01)
