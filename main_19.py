@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from random import randint
 from time import time
+import imageio
 
 
 def task3_2():
@@ -30,8 +31,8 @@ def task_live():
     infile.close()
     window_name = 'A live'
     t = time()
-    # cv2.namedWindow(window_name)
-
+    cv2.namedWindow(window_name)
+    writer = imageio.get_writer('live_out_img.gif', mode = 'I')
     # setup 2
     def show_gen(gen_i):
         def color_cell(j):
@@ -39,6 +40,8 @@ def task_live():
         int_in = [[color_cell(j) for j in i] for i in str_in]
         np_arr = np.array(int_in, dtype=np.float32)
         cv2.imwrite('liveimg/img'+str('0'*(3-len(str(gen_i)))+str(gen_i))+'.png', np_arr)
+        image = imageio.imread('liveimg/img'+str('0'*(3-len(str(gen_i)))+str(gen_i))+'.png')
+        writer.append_data(image)
         
         # array_show = cv2.resize(np_arr, (790, 790), interpolation=cv2.INTER_AREA)
         # cv2.imshow(window_name, array_show)
@@ -63,9 +66,11 @@ def task_live():
         show_gen(gen_i)
         print(gen_i, time() - t)
         t = time()
-        # if cv2.waitKey(1) == 27:
-        #     cv2.destroyAllWindows()
-        #     break
+        if cv2.waitKey(1) == 27:
+            print('End!!!')
+            writer.close()
+            cv2.destroyAllWindows()
+            break
         str_in = gen(str_in)
         gen_i += 1
         # sleep(0.01)
